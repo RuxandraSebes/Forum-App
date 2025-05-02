@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function QuestionForm({ onAddQuestion }) {
+export default function QuestionForm({ onAddQuestion, currentUser }) {
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
   const [tags, setTags] = useState("");
@@ -11,8 +11,8 @@ export default function QuestionForm({ onAddQuestion }) {
     e.preventDefault();
 
     const newQuestion = {
-      id: Date.now(),  // ID unic pe baza timpului
-      author: "User",  // Poți adăuga un sistem de autentificare ulterior
+      id: Date.now(),
+      author: currentUser || "User",  // Later you can add an authentication system
       title,
       text,
       createdAt: new Date().toISOString(),
@@ -31,52 +31,118 @@ export default function QuestionForm({ onAddQuestion }) {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        <label>Titlu:</label>
+    <form onSubmit={handleSubmit} style={styles.form}>
+      <div style={styles.formGroup}>
+        <label style={styles.label}>Titlu:</label>
         <input
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
+          style={styles.input}
         />
       </div>
-      <div>
-        <label>Text:</label>
+
+      <div style={styles.formGroup}>
+        <label style={styles.label}>Text:</label>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           required
+          style={styles.textarea}
         />
       </div>
-      <div>
-        <label>Tag-uri (separate prin virgulă):</label>
+
+      <div style={styles.formGroup}>
+        <label style={styles.label}>Tag-uri (separate prin virgulă):</label>
         <input
           type="text"
           value={tags}
           onChange={(e) => setTags(e.target.value)}
+          style={styles.input}
         />
       </div>
-      <div>
-        <label>Imagine:</label>
+
+      <div style={styles.formGroup}>
+        <label style={styles.label}>Imagine:</label>
         <input
           type="text"
           value={image}
           onChange={(e) => setImage(e.target.value)}
+          style={styles.input}
         />
       </div>
-      <div>
-        <label>Status:</label>
+
+      <div style={styles.formGroup}>
+        <label style={styles.label}>Status:</label>
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
+          style={styles.select}
         >
           <option value="received">Received</option>
           <option value="in progress">In Progress</option>
           <option value="solved">Solved</option>
         </select>
       </div>
-      <button type="submit">Adaugă întrebare</button>
+
+      <button type="submit" style={styles.submitButton}>
+        Adaugă întrebare
+      </button>
     </form>
   );
 }
+
+const styles = {
+  form: {
+    maxWidth: "600px",
+    margin: "20px auto",
+    padding: "20px",
+    backgroundColor: "#f9f9f9",
+    borderRadius: "8px",
+    boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
+  },
+  formGroup: {
+    marginBottom: "15px",
+  },
+  label: {
+    display: "block",
+    marginBottom: "5px",
+    fontWeight: "bold",
+  },
+  input: {
+    width: "100%",
+    padding: "10px",
+    fontSize: "14px",
+    borderRadius: "4px",
+    border: "1px solid #ccc",
+    boxSizing: "border-box",
+  },
+  textarea: {
+    width: "100%",
+    padding: "10px",
+    fontSize: "14px",
+    borderRadius: "4px",
+    border: "1px solid #ccc",
+    boxSizing: "border-box",
+    height: "150px",
+  },
+  select: {
+    width: "100%",
+    padding: "10px",
+    fontSize: "14px",
+    borderRadius: "4px",
+    border: "1px solid #ccc",
+    boxSizing: "border-box",
+  },
+  submitButton: {
+    width: "100%",
+    padding: "12px",
+    backgroundColor: "#007bff",
+    color: "#fff",
+    border: "none",
+    borderRadius: "4px",
+    fontSize: "16px",
+    cursor: "pointer",
+  },
+};

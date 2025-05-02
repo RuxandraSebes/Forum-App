@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function VoteButtons({ votes, onVote, author }) {
+export default function VoteButtons({ votes, onVote, author, disable = false }) {
     const [hasVoted, setHasVoted] = useState(false);
     const currentUser = "User";
 
@@ -21,8 +21,8 @@ export default function VoteButtons({ votes, onVote, author }) {
   
     return (
       <div>
-        <button onClick={handleUpvote}>👍</button>
-        <button onClick={handleDownvote}>👎</button>
+        <button onClick={handleUpvote} disabled={disable}>👍</button>
+        <button onClick={handleDownvote} disabled={disable}>👎</button>
         <span>{votes.up - votes.down}</span>
       </div>
     );
