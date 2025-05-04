@@ -89,8 +89,12 @@ export default function Home() {
           </div>
         )}
         </div>
-      <h2>Adaugă o întrebare</h2>
-      <QuestionForm onAddQuestion={addQuestion} currentUser={currentUser} />
+        <h2>Adaugă o întrebare</h2>
+{currentUser ? (
+  <QuestionForm onAddQuestion={addQuestion} currentUser={currentUser} />
+) : (
+  <p>Trebuie să fii <Link to="/login">autentificat</Link> pentru a adăuga întrebări.</p>
+)}
 
       <h2>Lista întrebărilor</h2>
 
