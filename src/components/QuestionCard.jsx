@@ -62,24 +62,27 @@ export default function QuestionCard({ question, onVote, onDelete, currentUser }
 
   const handleQuestionVote = (type) => {
     if (hasVoted || localQuestion.author === currentUser) return;
-
+  
     const updatedVotes = {
       ...localQuestion.votes,
       [type]: (localQuestion.votes[type] || 0) + 1,
     };
-
+  
     const updatedQuestion = {
       ...localQuestion,
       votes: updatedVotes,
     };
-
+  
     setLocalQuestion(updatedQuestion);
     setHasVoted(true);
-
-    // Salvează voturile în localStorage
+  
     saveToStorage(`question_vote_${question.id}`, true);
     saveToStorage(`question_votes_${question.id}`, updatedVotes);
-};
+  
+   
+    onVote(type); 
+  };
+  
 
 
   useEffect(() => {

@@ -4,18 +4,20 @@ export default function VoteButtons({ votes, onVote, author, currentUser, target
   const [hasVoted, setHasVoted] = useState(false);
   const [localVotes, setLocalVotes] = useState(votes);
 
- useEffect(() => {
+  useEffect(() => {
     const voted = localStorage.getItem(`voted-${targetId}-${currentUser}`);
     if (voted) {
       setHasVoted(true);
     }
   }, [targetId, currentUser]);
 
-   useEffect(() => {
-    localStorage.setItem(`question_votes_${targetId}`, JSON.stringify(localVotes));
+  useEffect(() => {
+    if (localVotes) {
+      localStorage.setItem(`question_votes_${targetId}`, JSON.stringify(localVotes));
+    }
   }, [localVotes, targetId]);
 
- const handleVote = (type) => {
+  const handleVote = (type) => {
     if (hasVoted || currentUser === author) return;
 
     const updatedVotes = {
@@ -27,13 +29,17 @@ export default function VoteButtons({ votes, onVote, author, currentUser, target
     setHasVoted(true);
     localStorage.setItem(`voted-${targetId}-${currentUser}`, "true");
 
-    onVote(type);
+    onVote(type); 
   };
 
   return (
     <div>
-      <button onClick={() => handleVote("up")} disabled={hasVoted || currentUser === author}>👍 {localVotes?.up}</button>
-      <button onClick={() => handleVote("down")} disabled={hasVoted || currentUser === author}>👎 {localVotes?.down}</button>
+      <button onClick={() => handleVote("up")} disabled={hasVoted || currentUser === author}>
+        👍 {localVotes?.up}
+      </button>
+      <button onClick={() => handleVote("down")} disabled={hasVoted || currentUser === author}>
+        👎 {localVotes?.down}
+      </button>
       <span>{(localVotes?.up || 0) - (localVotes?.down || 0)}</span>
     </div>
   );
