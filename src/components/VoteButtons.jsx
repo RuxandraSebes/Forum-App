@@ -1,30 +1,40 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-export default function VoteButtons({ votes, onVote, author, disable = false }) {
-    const [hasVoted, setHasVoted] = useState(false);
-    const currentUser = "User";
+export default function VoteButtons({ votes, onVote, author, currentUser, targetId }) {
+  const [hasVoted, setHasVoted] = useState(false);
+  const [localVotes, setLocalVotes] = useState(votes);
 
-    const handleVote = (type) => {
-        if (hasVoted || currentUser === author) return;
-    
-        onVote(type); // trimitem votul către întrebare sau răspuns
-        setHasVoted(true);
-      };
+ useEffect(() => {
+    const voted = localStorage.getItem(`voted-${targetId}-${currentUser}`);
+    if (voted) {
+      setHasVoted(true);
+    }
+  }, [targetId, currentUser]);
 
-    const handleUpvote = () => {
-      if (onVote) onVote("up");
+   useEffect(() => {
+    localStorage.setItem(`question_votes_${targetId}`, JSON.stringify(localVotes));
+  }, [localVotes, targetId]);
+
+ const handleVote = (type) => {
+    if (hasVoted || currentUser === author) return;
+
+    const updatedVotes = {
+      ...localVotes,
+      [type]: (localVotes[type] || 0) + 1,
     };
-  
-    const handleDownvote = () => {
-      if (onVote) onVote("down");
-    };
-  
-    return (
-      <div>
-        <button onClick={handleUpvote} disabled={disable}>👍</button>
-        <button onClick={handleDownvote} disabled={disable}>👎</button>
-        <span>{votes.up - votes.down}</span>
-      </div>
-    );
-  }
-  
+
+    setLocalVotes(updatedVotes);
+    setHasVoted(true);
+    localStorage.setItem(`voted-${targetId}-${currentUser}`, "true");
+
+    onVote(type);
+  };
+
+  return (
+    <div>
+      <button onClick={() => handleVote("up")} disabled={hasVoted || currentUser === author}>👍 {localVotes?.up}</button>
+      <button onClick={() => handleVote("down")} disabled={hasVoted || currentUser === author}>👎 {localVotes?.down}</button>
+      <span>{(localVotes?.up || 0) - (localVotes?.down || 0)}</span>
+    </div>
+  );
+}

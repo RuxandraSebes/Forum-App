@@ -62,6 +62,7 @@ export default function QuestionCard({ question, onVote, onDelete, currentUser }
 
   const handleQuestionVote = (type) => {
     if (hasVoted || localQuestion.author === currentUser) return;
+
     const updatedVotes = {
       ...localQuestion.votes,
       [type]: (localQuestion.votes[type] || 0) + 1,
@@ -75,20 +76,21 @@ export default function QuestionCard({ question, onVote, onDelete, currentUser }
     setLocalQuestion(updatedQuestion);
     setHasVoted(true);
 
+    // Salvează voturile în localStorage
     saveToStorage(`question_vote_${question.id}`, true);
     saveToStorage(`question_votes_${question.id}`, updatedVotes);
-  };
+};
+
 
   useEffect(() => {
     if (question.status === "received" && answers.length > 0) {
       question.status = "in progress";
     }
-  }, [answers]);
+  }, [answers, question]);
 
   const handleAnswerVote = (id, type) => {
     const targetAnswer = answers.find((ans) => ans.id === id);
   
-    // Nu permite vot dacă autorul e același cu utilizatorul curent
     if (!targetAnswer || targetAnswer.author === currentUser) return;
   
     const updatedAnswers = answers.map((ans) =>
@@ -108,7 +110,6 @@ export default function QuestionCard({ question, onVote, onDelete, currentUser }
   };
 
   const handleAcceptAnswer = (id) => {
-    // Dacă întrebarea e deja rezolvată, nu mai poți accepta alt răspuns
     if (localQuestion.status === "solved") return;
   
     const updatedAnswers = answers.map((ans) =>
@@ -155,6 +156,13 @@ export default function QuestionCard({ question, onVote, onDelete, currentUser }
   return (
     <div style={styles.container}>
       <div style={styles.card}>
+      <div style={styles.imageContainer}>
+          <img
+            src={"/images/user-profile-icon-free-vector.jpg"}
+            alt="Profile"
+            style={styles.image}
+          />
+        </div>
         <h3>{localQuestion.title}</h3>
 
         {question.picture && (
@@ -216,8 +224,15 @@ export default function QuestionCard({ question, onVote, onDelete, currentUser }
           <p><strong>Data creării:</strong> {new Date(question.createdAt).toLocaleString()}</p>
           <p><strong>Status:</strong> {localQuestion.status}</p>
           <p><strong>Tag-uri:</strong> {localQuestion.tags.join(", ")}</p>
-          <VoteButtons votes={localQuestion.votes} onVote={handleQuestionVote} author={localQuestion.author} disable={localQuestion.author === currentUser} />
-        </div>
+          <p style={styles.text}><strong>Întrebare:</strong> {localQuestion.text}</p>
+
+          <VoteButtons
+  votes={{ ...localQuestion.votes }}
+  onVote={handleQuestionVote}
+  author={localQuestion.author}
+  currentUser={currentUser}
+  targetId={localQuestion.id}
+/> </div>
 
         <h4>Răspunsuri:</h4>
         {answers.length > 0 ? (
@@ -238,13 +253,25 @@ export default function QuestionCard({ question, onVote, onDelete, currentUser }
           <p>Nu sunt răspunsuri încă.</p>
         )}
 
-        <AnswerForm onAddAnswer={addAnswer} currentUser={localQuestion.author}  questionStatus={localQuestion.status}/>
+        <AnswerForm onAddAnswer={addAnswer} currentUser={currentUser}  questionStatus={localQuestion.status}/>
       </div>
     </div>
   );
 }
 
 const styles = {
+  text: {
+    marginBottom: "15px",
+    fontSize: "16px",
+    lineHeight: "1.5",
+  },
+  
+  image: {
+    width: "50px",
+    height: "50px",
+    borderRadius: "50%",
+    objectFit: "cover",
+  },
   container: {
     display: "flex",
     justifyContent: "center",

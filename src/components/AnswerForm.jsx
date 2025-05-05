@@ -2,29 +2,37 @@ import { useState } from "react";
 
 export default function AnswerForm({ onAddAnswer, currentUser, questionStatus }) {
   const [text, setText] = useState("");
-  const [image, setImage] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
     const newAnswer = {
       id: Date.now(),
-      author: currentUser || "User",  // You can add an authentication system later
+      author: currentUser || "User", 
       text,
       createdAt: new Date().toISOString(),
-      picture: image,
+      picture: "/images/user-profile-icon-free-vector.jpg", 
       votes: { up: 0, down: 0 },
     };
+    console.log("author", newAnswer.author);
 
     onAddAnswer(newAnswer);
     setText("");
-    setImage("");
   };
 
   const isDisabled = questionStatus === "solved";
 
   return (
     <form onSubmit={handleSubmit} style={styles.form}>
+       <div style={styles.formGroup}>
+        <div style={styles.imageContainer}>
+          <img
+            src={"/images/user-profile-icon-free-vector.jpg"}
+            alt="Profile"
+            style={styles.image}
+          />
+        </div>
+      </div>
       <div style={styles.formGroup}>
         <label style={styles.label}>Răspuns:</label>
         <textarea
@@ -34,29 +42,21 @@ export default function AnswerForm({ onAddAnswer, currentUser, questionStatus })
           style={styles.textarea}
         />
       </div>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Imagine:</label>
-        <input
-          type="text"
-          value={image}
-          onChange={(e) => setImage(e.target.value)}
-          style={styles.input}
-        />
-      </div>
-      <button type="submit"  disabled={isDisabled} style={styles.submitButton}>Adaugă răspuns</button>
+     
+      <button type="submit" disabled={isDisabled} style={styles.submitButton}>Adaugă răspuns</button>
     </form>
   );
 }
 
 const styles = {
   form: {
+    margin: "20px",
     backgroundColor: "#f9f9f9",
-    padding: "20px",
+    padding: "50px",
     borderRadius: "8px",
     boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
-    width: "100%",
+    width: "50%",
     maxWidth: "500px",
-    margin: "0 auto",
   },
   formGroup: {
     marginBottom: "15px",
@@ -77,13 +77,14 @@ const styles = {
     minHeight: "100px",
     boxSizing: "border-box",
   },
-  input: {
-    width: "100%",
-    padding: "10px",
-    borderRadius: "4px",
-    border: "1px solid #ccc",
-    fontSize: "14px",
-    boxSizing: "border-box",
+  imageContainer: {
+    marginBottom: "15px",
+  },
+  image: {
+    width: "50px",
+    height: "50px",
+    borderRadius: "50%",
+    objectFit: "cover",
   },
   submitButton: {
     backgroundColor: "#007bff",

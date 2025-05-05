@@ -12,7 +12,7 @@ export default function QuestionForm({ onAddQuestion, currentUser }) {
 
     const newQuestion = {
       id: Date.now(),
-      author: currentUser || "User",  // Later you can add an authentication system
+      author: currentUser || "User",
       title,
       text,
       createdAt: new Date().toISOString(),
@@ -32,6 +32,15 @@ export default function QuestionForm({ onAddQuestion, currentUser }) {
 
   return (
     <form onSubmit={handleSubmit} style={styles.form}>
+
+<div style={styles.imageContainer}>
+          <img
+            src={"/images/user-profile-icon-free-vector.jpg"}
+            alt="Profile"
+            style={styles.image}
+          />
+        </div>
+      
       <div style={styles.formGroup}>
         <label style={styles.label}>Titlu:</label>
         <input
@@ -63,29 +72,6 @@ export default function QuestionForm({ onAddQuestion, currentUser }) {
         />
       </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Imagine:</label>
-        <input
-          type="text"
-          value={image}
-          onChange={(e) => setImage(e.target.value)}
-          style={styles.input}
-        />
-      </div>
-
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Status:</label>
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          style={styles.select}
-        >
-          <option value="received">Received</option>
-          <option value="in progress">In Progress</option>
-          <option value="solved">Solved</option>
-        </select>
-      </div>
-
       <button type="submit" style={styles.submitButton}>
         Adaugă întrebare
       </button>
@@ -94,6 +80,12 @@ export default function QuestionForm({ onAddQuestion, currentUser }) {
 }
 
 const styles = {
+  image: {
+    width: "50px",
+    height: "50px",
+    borderRadius: "50%",
+    objectFit: "cover",
+  },
   form: {
     maxWidth: "600px",
     margin: "20px auto",

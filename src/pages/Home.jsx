@@ -11,7 +11,7 @@ export default function Home() {
   const [searchText, setSearchText] = useState("");
   const [selectedTag, setSelectedTag] = useState("");
   const [showOwnQuestions, setShowOwnQuestions] = useState(false);
-  const [currentUser, setCurrentUser] = useState("user1"); // sau orice ID/nume de utilizator vrei
+  const [currentUser, setCurrentUser] = useState("user1");
   
   const navigate = useNavigate();
 
@@ -52,7 +52,6 @@ export default function Home() {
     setQuestions(updatedQuestions);
     saveToStorage("questions", updatedQuestions);
   
-    // Șterge din localStorage și toate datele asociate
     localStorage.removeItem(`question_data_${id}`);
     localStorage.removeItem(`answers_${id}`);
     localStorage.removeItem(`question_votes_${id}`);
@@ -60,63 +59,60 @@ export default function Home() {
   };
   
   const filteredQuestions = questions.filter((question) => {
-    // Căutare în titlu
-    const matchesSearch = question.title.toLowerCase().includes(searchText.toLowerCase());
-
-    // Filtrare după tag
-    const matchesTag = selectedTag ? question.tags.some((tag) => tag.toLowerCase().includes(selectedTag.toLowerCase())) : true;
-
-    // Filtrare după întrebările proprii
-    const matchesOwnQuestions = showOwnQuestions ? question.author === currentUser : true;
+  const matchesSearch = question.title.toLowerCase().includes(searchText.toLowerCase());
+  const matchesTag = selectedTag ? question.tags.some((tag) => tag.toLowerCase().includes(selectedTag.toLowerCase())) : true;
+  const matchesOwnQuestions = showOwnQuestions ? question.author === currentUser : true;
 
     return matchesSearch && matchesTag && matchesOwnQuestions;
   });
 
   return (
-    <div>
-         <div>
-      {/* Bara de sus cu butoane de autentificare */}
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem" }}>
-        {currentUser ? (
-          <>
-            <span>Bun venit, {currentUser}!</span>
-            <button onClick={handleLogout}>Logout</button>
-          </>
-        ) : (
-          <div>
-            <Link to="/login"><button style={{ marginRight: "10px" }}>Login</button></Link>
-            <Link to="/register"><button>Register</button></Link>
-          </div>
-        )}
+    <div style={styles.container}>
+      {/* Bara de sus */}
+      <div style={styles.topBar}>
+        <div>
+          {currentUser ? (
+            <>
+              <span style={styles.welcomeText}>👋 Bun venit, <strong>{currentUser}</strong></span>
+              <button style={styles.logoutButton} onClick={handleLogout}>Logout</button>
+            </>
+          ) : (
+            <div>
+              <Link to="/login"><button style={styles.button}>Login</button></Link>
+              <Link to="/register"><button style={styles.button}>Register</button></Link>
+            </div>
+          )}
         </div>
-        <h2>Adaugă o întrebare</h2>
-{currentUser ? (
-  <QuestionForm onAddQuestion={addQuestion} currentUser={currentUser} />
-) : (
-  <p>Trebuie să fii <Link to="/login">autentificat</Link> pentru a adăuga întrebări.</p>
-)}
-
-      <h2>Lista întrebărilor</h2>
-
+      </div>
+  
+      <h2 style={styles.sectionTitle}>📝 Adaugă o întrebare</h2>
+      {currentUser ? (
+        <QuestionForm onAddQuestion={addQuestion} currentUser={currentUser} />
+      ) : (
+        <p>Trebuie să fii <Link to="/login">autentificat</Link> pentru a adăuga întrebări.</p>
+      )}
+  
+      <h2 style={styles.sectionTitle}>📋 Lista întrebărilor</h2>
+  
       {/* Filtrare */}
-      <div>
+      <div style={styles.filterContainer}>
         <input
           type="text"
-          placeholder="Căutare după titlu"
+          placeholder="🔍 Căutare după titlu"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           style={styles.input}
         />
-
+  
         <input
           type="text"
-          placeholder="Filtrare după tag"
+          placeholder="🏷️ Filtrare după tag"
           value={selectedTag}
           onChange={(e) => setSelectedTag(e.target.value)}
           style={styles.input}
         />
-
-        <label>
+  
+        <label style={styles.checkboxLabel}>
           <input
             type="checkbox"
             checked={showOwnQuestions}
@@ -125,30 +121,85 @@ export default function Home() {
           Afișează doar întrebările mele
         </label>
       </div>
-
-      {/* Listă întrebări filtrate */}
-      <div>
+  
+      {/* Intrebări */}
+      <div style={styles.questionsList}>
         {filteredQuestions.map((question) => (
           <QuestionCard
             key={question.id}
             question={question}
             onVote={handleQuestionVote}
             onDelete={handleDeleteQuestion}
-            currentUser={currentUser} // Presupunem că întrebarea are un câmp author
+            currentUser={currentUser}
           />
         ))}
       </div>
     </div>
-    </div>
   );
+  
 }
 
 const styles = {
+  container: {
+    maxWidth: "800px",
+    margin: "0 auto",
+    padding: "2rem",
+    fontFamily: "Arial, sans-serif",
+  },
+  topBar: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: "1.5rem",
+    backgroundColor: "#f8f9fa",
+    padding: "10px 20px",
+    borderRadius: "8px",
+    border: "1px solid #ddd",
+  },
+  welcomeText: {
+    marginRight: "10px",
+    fontSize: "1rem",
+  },
+  logoutButton: {
+    backgroundColor: "#dc3545",
+    color: "white",
+    border: "none",
+    padding: "8px 12px",
+    borderRadius: "4px",
+    cursor: "pointer",
+  },
+  button: {
+    marginRight: "10px",
+    backgroundColor: "#007bff",
+    color: "white",
+    border: "none",
+    padding: "8px 12px",
+    borderRadius: "4px",
+    cursor: "pointer",
+  },
+  sectionTitle: {
+    marginTop: "2rem",
+    marginBottom: "1rem",
+    fontSize: "1.5rem",
+    color: "#333",
+  },
   input: {
     width: "100%",
-    padding: "8px",
-    marginBottom: "8px",
-    borderRadius: "4px",
+    padding: "10px",
+    marginBottom: "10px",
+    borderRadius: "6px",
     border: "1px solid #ccc",
+    fontSize: "1rem",
+  },
+  filterContainer: {
+    marginBottom: "2rem",
+  },
+  checkboxLabel: {
+    display: "block",
+    marginTop: "0.5rem",
+  },
+  questionsList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "1rem",
   },
 };

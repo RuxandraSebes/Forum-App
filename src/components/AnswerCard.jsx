@@ -12,6 +12,15 @@ export default function AnswerCard({ answer, onEdit, onDelete, onVote, question,
 
   return (
     <div style={styles.card}>
+      <div style={styles.formGroup}>
+        <div style={styles.imageContainer}>
+          <img
+            src={"/images/user-profile-icon-free-vector.jpg"}
+            alt="Profile"
+            style={styles.image}
+          />
+        </div>
+      </div>
         {question?.status !== "solved" && question?.author === currentUser && (
   <button onClick={() => onAccept(answer.id)} style={styles.acceptButton}>
     Acceptă răspunsul
@@ -45,16 +54,23 @@ export default function AnswerCard({ answer, onEdit, onDelete, onVote, question,
           <p style={styles.meta}>
             <strong>Data:</strong> {new Date(answer.createdAt).toLocaleString()}
           </p>
-
           <VoteButtons
-            votes={answer.votes}
-            onVote={(type) => onVote(answer.id, type)}
-            author={answer.author}
-          />
+  votes={answer.votes}
+  onVote={(type) => onVote(answer.id, type)}
+  author={answer.author}
+  currentUser={currentUser}
+  targetId={answer.id}
+/>
+
 
           <div style={styles.buttonContainer}>
-            <button onClick={() => setIsEditing(true)} style={styles.editButton}>Editează</button>
-            <button onClick={() => onDelete(answer.id)} style={styles.deleteButton}>Șterge</button>
+          {answer.author === currentUser && (
+  <div style={styles.buttonContainer}>
+    <button onClick={() => setIsEditing(true)} style={styles.editButton}>Editează</button>
+    <button onClick={() => onDelete(answer.id)} style={styles.deleteButton}>Șterge</button>
+  </div>
+)}
+
           </div>
         </>
       )}
@@ -63,6 +79,12 @@ export default function AnswerCard({ answer, onEdit, onDelete, onVote, question,
 }
 
 const styles = {
+  image: {
+    width: "50px",
+    height: "50px",
+    borderRadius: "50%",
+    objectFit: "cover",
+  },
   card: {
     border: "1px solid #eee",
     backgroundColor: "#f9f9f9",
