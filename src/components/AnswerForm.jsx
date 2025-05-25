@@ -1,30 +1,47 @@
 import { useState } from "react";
-
-export default function AnswerForm({ onAddAnswer, currentUser, questionStatus }) {
+export default function AnswerForm({ onAddAnswer, currentUser, questionId, questionStatus }) {
   const [text, setText] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const newAnswer = {
-      id: Date.now(),
-      author: currentUser || "User", 
-      text,
-      createdAt: new Date().toISOString(),
-      picture: "/images/user-profile-icon-free-vector.jpg", 
-      votes: { up: 0, down: 0 },
-    };
-    console.log("author", newAnswer.author);
+    //console.log("authorId:", currentUser?.id);
+    //console.log("questionId:", questionId);
 
-    onAddAnswer(newAnswer);
-    setText("");
+
+    const answerRequestDTO = {
+      content: text,
+    };
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/answers/insert?authorId=${currentUser.id}&questionId=${questionId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(answerRequestDTO)
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Eroare la trimiterea răspunsului");
+      }
+
+      const newAnswer = await response.json();
+      onAddAnswer(newAnswer);
+      setText("");
+    } catch (error) {
+      console.error("Eroare:", error);
+    }
   };
 
   const isDisabled = questionStatus === "solved";
 
   return (
     <form onSubmit={handleSubmit} style={styles.form}>
-       <div style={styles.formGroup}>
+      <div style={styles.formGroup}>
         <div style={styles.imageContainer}>
           <img
             src={"/images/user-profile-icon-free-vector.jpg"}
@@ -42,11 +59,13 @@ export default function AnswerForm({ onAddAnswer, currentUser, questionStatus })
           style={styles.textarea}
         />
       </div>
-     
-      <button type="submit" disabled={isDisabled} style={styles.submitButton}>Adaugă răspuns</button>
+      <button type="submit" disabled={isDisabled} style={styles.submitButton}>
+        Adaugă răspuns
+      </button>
     </form>
   );
 }
+
 
 const styles = {
   form: {

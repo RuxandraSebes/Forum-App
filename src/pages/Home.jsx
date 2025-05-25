@@ -3,25 +3,45 @@ import { Link, useNavigate } from "react-router-dom";
 import QuestionForm from "../components/QuestionForm";
 import QuestionCard from "../components/QuestionCard";
 import { loadFromStorage, saveToStorage } from "../utils/LocalStorage";
+import { getQuestionDetails, getQuestionById } from "../api/questionApi";
 
 export default function Home() {
-   const [questions, setQuestions] = useState(() => {
-    return loadFromStorage("questions") || [];
+  const [questions, setQuestions] = useState(() => {
+    const loaded = loadFromStorage("questions");
+    return Array.isArray(loaded) ? loaded : [];
   });
+
   const [searchText, setSearchText] = useState("");
   const [selectedTag, setSelectedTag] = useState("");
   const [showOwnQuestions, setShowOwnQuestions] = useState(false);
-  const [currentUser, setCurrentUser] = useState("user1");
-  
+  const [currentUser, setCurrentUser] = useState("updatedUser");
+
   const navigate = useNavigate();
 
   useEffect(() => {
-    const user = loadFromStorage("currentUser");
-    setCurrentUser(user?.username || null);
-  }, []);
+  const fetchQuestions = async () => {
+    try {
+      const response = await getQuestionDetails();
+const data = response.data;
+      //console.log("date din API:", data);  // 🟡 vezi ce primești
+
+      if (Array.isArray(data)) {
+        setQuestions(data);
+        saveToStorage("questions", data);
+      } else {
+        console.error("Datele întoarse de getQuestionDetails NU sunt un array:", data);
+        setQuestions([]);
+      }
+    } catch (error) {
+      console.error("Eroare la încărcarea întrebărilor:", error);
+    }
+  };
+
+  fetchQuestions();
+}, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("currentUser");
+    //localStorage.removeItem("currentUser");
     setCurrentUser(null);
     navigate("/login");
   };
@@ -47,21 +67,31 @@ export default function Home() {
     saveToStorage("questions", updated);
   };
 
-  const handleDeleteQuestion = (id) => {
+  /*const handleDeleteQuestion = (id) => {
     const updatedQuestions = questions.filter((q) => q.id !== id);
     setQuestions(updatedQuestions);
     saveToStorage("questions", updatedQuestions);
-  
+
     localStorage.removeItem(`question_data_${id}`);
     localStorage.removeItem(`answers_${id}`);
     localStorage.removeItem(`question_votes_${id}`);
     localStorage.removeItem(`question_vote_${id}`);
-  };
-  
+  };*/
+  const handleDeleteQuestion = (id) => {
+  setQuestions(prev => prev.filter(q => q.id !== id));
+};
+
+
   const filteredQuestions = questions.filter((question) => {
-  const matchesSearch = question.title.toLowerCase().includes(searchText.toLowerCase());
-  const matchesTag = selectedTag ? question.tags.some((tag) => tag.toLowerCase().includes(selectedTag.toLowerCase())) : true;
-  const matchesOwnQuestions = showOwnQuestions ? question.author === currentUser : true;
+    const title = question.title || "";
+    const tags = Array.isArray(question.tags) ? question.tags : [];
+    const author = question.author || "";
+
+    const matchesSearch = title.toLowerCase().includes(searchText.toLowerCase());
+    const matchesTag = selectedTag
+      ? tags.some((tag) => tag.toLowerCase().includes(selectedTag.toLowerCase()))
+      : true;
+    const matchesOwnQuestions = showOwnQuestions ? author === currentUser : true;
 
     return matchesSearch && matchesTag && matchesOwnQuestions;
   });
@@ -84,16 +114,16 @@ export default function Home() {
           )}
         </div>
       </div>
-  
+
       <h2 style={styles.sectionTitle}>📝 Adaugă o întrebare</h2>
       {currentUser ? (
         <QuestionForm onAddQuestion={addQuestion} currentUser={currentUser} />
       ) : (
         <p>Trebuie să fii <Link to="/login">autentificat</Link> pentru a adăuga întrebări.</p>
       )}
-  
+
       <h2 style={styles.sectionTitle}>📋 Lista întrebărilor</h2>
-  
+
       {/* Filtrare */}
       <div style={styles.filterContainer}>
         <input
@@ -103,7 +133,7 @@ export default function Home() {
           onChange={(e) => setSearchText(e.target.value)}
           style={styles.input}
         />
-  
+
         <input
           type="text"
           placeholder="🏷️ Filtrare după tag"
@@ -111,7 +141,7 @@ export default function Home() {
           onChange={(e) => setSelectedTag(e.target.value)}
           style={styles.input}
         />
-  
+
         <label style={styles.checkboxLabel}>
           <input
             type="checkbox"
@@ -121,22 +151,25 @@ export default function Home() {
           Afișează doar întrebările mele
         </label>
       </div>
-  
-      {/* Intrebări */}
+
+      {/* Întrebări */}
       <div style={styles.questionsList}>
-        {filteredQuestions.map((question) => (
-          <QuestionCard
-            key={question.id}
-            question={question}
-            onVote={handleQuestionVote}
-            onDelete={handleDeleteQuestion}
-            currentUser={currentUser}
-          />
-        ))}
+        {filteredQuestions.length === 0 ? (
+          <p>Nu există întrebări care să corespundă filtrării.</p>
+        ) : (
+          filteredQuestions.map((question) => (
+            <QuestionCard
+              key={question.id}
+              question={question}
+              onVote={handleQuestionVote}
+              onDelete={handleDeleteQuestion}
+              currentUser={currentUser}
+            />
+          ))
+        )}
       </div>
     </div>
   );
-  
 }
 
 const styles = {

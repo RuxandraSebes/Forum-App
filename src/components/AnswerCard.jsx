@@ -3,33 +3,56 @@ import VoteButtons from "./VoteButtons";
 
 export default function AnswerCard({ answer, onEdit, onDelete, onVote, question, currentUser, onAccept }) {
   const [isEditing, setIsEditing] = useState(false);
-  const [newText, setNewText] = useState(answer.text);
+  const [newText, setNewText] = useState(answer.content);
+
+  console.log("AnswerCard currentUser", currentUser);
 
   const handleEdit = () => {
     onEdit(answer.id, newText);
     setIsEditing(false);
   };
 
+const currentUsername = typeof currentUser === "string" ? currentUser : currentUser?.username;
+
+const normalize = str => (str || "").trim().toLowerCase();
+
+const questionAuthorUsername = question?.author?.username;
+
+const isAuthor = answer.authorUsername === currentUsername;
+const isQuestionAuthor = normalize(questionAuthorUsername) === normalize(currentUsername);
+
+//console.log("question full object:", question);
+//console.log("questionAuthorUsername:", questionAuthorUsername);
+//console.log("isQuestionAuthor:", isQuestionAuthor);
+
+
+  const isSolved = question?.status?.toLowerCase() === "solved";
+
   return (
     <div style={styles.card}>
       <div style={styles.formGroup}>
         <div style={styles.imageContainer}>
           <img
-            src={"/images/user-profile-icon-free-vector.jpg"}
+            src={answer.picture || "/images/user-profile-icon-free-vector.jpg"}
             alt="Profile"
             style={styles.image}
           />
         </div>
       </div>
-        {question?.status !== "solved" && question?.author === currentUser && (
-  <button onClick={() => onAccept(answer.id)} style={styles.acceptButton}>
-    Acceptă răspunsul
-  </button>
-)}
 
-{answer.isAccepted && (
-  <p style={{ color: "green", fontWeight: "bold" }}>✔ Răspuns acceptat</p>
-)}
+
+      {!isSolved && isQuestionAuthor && !answer.isAccepted && (
+      <button onClick={() => onAccept(answer.id)} style={styles.acceptButton}>
+        Acceptă răspunsul
+      </button>
+    )}
+
+    {/*localQuestion.author === currentUser.username && localQuestion.status !== "solved" && (
+  <button onClick={() => updateQuestionStatus("solved")} style={styles.button}>
+    Marchează ca rezolvat
+  </button>
+)*/}
+
 
 
       {isEditing ? (
@@ -47,30 +70,29 @@ export default function AnswerCard({ answer, onEdit, onDelete, onVote, question,
         </>
       ) : (
         <>
-          <p style={styles.text}>{answer.text}</p>
+          <p style={styles.text}>{answer.content}</p>
           <p style={styles.meta}>
-            <strong>Autor:</strong> {answer.author}
+            <strong>Autor:</strong> {answer.authorUsername}
           </p>
           <p style={styles.meta}>
-            <strong>Data:</strong> {new Date(answer.createdAt).toLocaleString()}
+            <strong>Data:</strong> {new Date(answer.createdDate).toLocaleString()}
           </p>
-          <VoteButtons
+         <VoteButtons
+  isAnswer={true}
   votes={answer.votes}
-  onVote={(type) => onVote(answer.id, type)}
-  author={answer.author}
-  currentUser={currentUser}
+  author={answer.authorUsername}
+  currentUser={currentUsername}
   targetId={answer.id}
 />
 
 
           <div style={styles.buttonContainer}>
-          {answer.author === currentUser && (
-  <div style={styles.buttonContainer}>
-    <button onClick={() => setIsEditing(true)} style={styles.editButton}>Editează</button>
-    <button onClick={() => onDelete(answer.id)} style={styles.deleteButton}>Șterge</button>
-  </div>
-)}
-
+            {isAuthor && (
+              <div style={styles.buttonContainer}>
+                <button onClick={() => setIsEditing(true)} style={styles.editButton}>Editează</button>
+                <button onClick={() => onDelete(answer.id)} style={styles.deleteButton}>Șterge</button>
+              </div>
+            )}
           </div>
         </>
       )}
@@ -148,5 +170,14 @@ const styles = {
     padding: "8px 15px",
     borderRadius: "4px",
     cursor: "pointer",
+  },
+  acceptButton: {
+    backgroundColor: "#28a745",
+    color: "#fff",
+    border: "none",
+    padding: "8px 15px",
+    borderRadius: "4px",
+    cursor: "pointer",
+    marginBottom: "10px",
   },
 };

@@ -1,20 +1,24 @@
 import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { addQuestion } from "../redux/actions/questionAction";
 
 export default function QuestionForm({ onAddQuestion, currentUser }) {
   const [title, setTitle] = useState("");
-  const [text, setText] = useState("");
+  const [content, setContent] = useState("");
   const [tags, setTags] = useState("");
   const [status, setStatus] = useState("received");
   const [image, setImage] = useState("");
+
+  const dispatch = useDispatch();
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
     const newQuestion = {
-      id: Date.now(),
-      author: currentUser || "User",
+      //id: Date.now(),
+      author: { id: 1, name: currentUser || "User" },
       title,
-      text,
+      content,
       createdAt: new Date().toISOString(),
       picture: image,
       status,
@@ -22,9 +26,12 @@ export default function QuestionForm({ onAddQuestion, currentUser }) {
       votes: { up: 0, down: 0 },
     };
 
-    onAddQuestion(newQuestion);
+    //console.log("Payload trimis la backend:", newQuestion); 
+    dispatch(addQuestion(newQuestion));
+
+    //onAddQuestion(newQuestion);
     setTitle("");
-    setText("");
+    setContent("");
     setTags("");
     setStatus("received");
     setImage("");
@@ -44,7 +51,7 @@ export default function QuestionForm({ onAddQuestion, currentUser }) {
       <div style={styles.formGroup}>
         <label style={styles.label}>Titlu:</label>
         <input
-          type="text"
+          type="content"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
@@ -55,8 +62,8 @@ export default function QuestionForm({ onAddQuestion, currentUser }) {
       <div style={styles.formGroup}>
         <label style={styles.label}>Text:</label>
         <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
           required
           style={styles.textarea}
         />
@@ -65,7 +72,7 @@ export default function QuestionForm({ onAddQuestion, currentUser }) {
       <div style={styles.formGroup}>
         <label style={styles.label}>Tag-uri (separate prin virgulă):</label>
         <input
-          type="text"
+          type="content"
           value={tags}
           onChange={(e) => setTags(e.target.value)}
           style={styles.input}
