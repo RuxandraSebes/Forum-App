@@ -1,31 +1,52 @@
 import { useState } from "react";
-import { loadFromStorage, saveToStorage } from "../utils/LocalStorage";
+import { saveToStorage } from "../utils/LocalStorage";
 import { useNavigate, Link } from "react-router-dom";
 
 export default function Login() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState(""); // folosim email în loc de username
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState(null);
   const [messageType, setMessageType] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    const users = loadFromStorage("users") || [];
-    const user = users.find(
-      (u) => u.username === username && u.password === password
-    );
 
-    if (!user) {
-      setMessage("Utilizator sau parolă greșită!");
+    try {
+      const response = await fetch("http://localhost:8080/users/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (response.status === 401) {
+        setMessage("Email sau parolă greșită!");
+        setMessageType("error");
+        return;
+      }
+
+      if (response.status === 403) {
+        setMessage("Contul este blocat!");
+        setMessageType("error");
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error("Eroare necunoscută");
+      }
+
+      const user = await response.json();
+      saveToStorage("currentUser", user);
+      setMessage("Autentificare reușită!");
+      setMessageType("success");
+      setTimeout(() => navigate("/"), 1000);
+    } catch (error) {
+      console.error("Eroare la login:", error);
+      setMessage("Eroare la conectare!");
       setMessageType("error");
-      return;
     }
-
-    saveToStorage("currentUser", user);
-    setMessage("Autentificare reușită!");
-    setMessageType("success");
-    setTimeout(() => navigate("/"), 1000);
   };
 
   return (
@@ -46,10 +67,10 @@ export default function Login() {
         )}
 
         <input
-          type="text"
-          placeholder="Nume utilizator"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           required
           style={styles.input}
         />

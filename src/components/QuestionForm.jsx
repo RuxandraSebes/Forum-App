@@ -16,16 +16,17 @@ export default function QuestionForm({ onAddQuestion, currentUser }) {
 
     const newQuestion = {
       //id: Date.now(),
-      author: { id: 1, name: currentUser || "User" },
+      author: { id: currentUser.id, name: currentUser.username || "User" },
       title,
       content,
       createdAt: new Date().toISOString(),
       picture: image,
       status,
-      tags: tags.split(",").map(tag => tag.trim()),
+      tagNames: tags.split(",").map(tag => tag.trim()).filter(tag => tag.length > 0),
       votes: { up: 0, down: 0 },
     };
 
+    //console.log("data", newQuestion.createdAt);
     //console.log("Payload trimis la backend:", newQuestion); 
     dispatch(addQuestion(newQuestion));
 

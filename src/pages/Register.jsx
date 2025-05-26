@@ -1,30 +1,50 @@
 import { useState } from "react";
-import { loadFromStorage, saveToStorage } from "../utils/LocalStorage";
 import { useNavigate, Link } from "react-router-dom";
 
 export default function Register() {
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState(null);
   const [messageType, setMessageType] = useState("");
   const navigate = useNavigate();
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    const users = loadFromStorage("users") || [];
 
-    if (users.find((u) => u.username === username)) {
-      setMessage("Numele de utilizator există deja!");
+    const payload = {
+      email: email,
+      username: username,
+      role: "user",
+      score: 0.0,
+      password: password,
+      picture: null,
+      phoneNumber: null,
+      isBanned: false
+    };
+
+    try {
+      const response = await fetch("http://localhost:8080/users/insert", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        setMessage("Înregistrare reușită!");
+        setMessageType("success");
+        setTimeout(() => navigate("/login"), 1000);
+      } else {
+        const errorText = await response.text();
+        setMessage("Eroare la înregistrare: " + errorText);
+        setMessageType("error");
+      }
+    } catch (error) {
+      setMessage("Eroare la conectarea cu serverul.");
       setMessageType("error");
-      return;
     }
-
-    const newUser = { username, password };
-    users.push(newUser);
-    saveToStorage("users", users);
-    setMessage("Înregistrare reușită!");
-    setMessageType("success");
-    setTimeout(() => navigate("/login"), 1000);
   };
 
   return (
@@ -49,6 +69,14 @@ export default function Register() {
           placeholder="Nume utilizator"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          required
+          style={styles.input}
+        />
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           required
           style={styles.input}
         />

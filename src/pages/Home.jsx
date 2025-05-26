@@ -14,9 +14,16 @@ export default function Home() {
   const [searchText, setSearchText] = useState("");
   const [selectedTag, setSelectedTag] = useState("");
   const [showOwnQuestions, setShowOwnQuestions] = useState(false);
-  const [currentUser, setCurrentUser] = useState("updatedUser");
+  const [currentUser, setCurrentUser] = useState(() => loadFromStorage("currentUser") || null);
+
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+  const userFromStorage = loadFromStorage("currentUser");
+  setCurrentUser(userFromStorage);
+}, []);
+
 
   useEffect(() => {
   const fetchQuestions = async () => {
@@ -41,7 +48,7 @@ const data = response.data;
 }, []);
 
   const handleLogout = () => {
-    //localStorage.removeItem("currentUser");
+    localStorage.removeItem("currentUser");
     setCurrentUser(null);
     navigate("/login");
   };
@@ -103,7 +110,7 @@ const data = response.data;
         <div>
           {currentUser ? (
             <>
-              <span style={styles.welcomeText}>👋 Bun venit, <strong>{currentUser}</strong></span>
+              <span style={styles.welcomeText}>👋 Bun venit, <strong>{currentUser?.username}</strong></span>
               <button style={styles.logoutButton} onClick={handleLogout}>Logout</button>
             </>
           ) : (

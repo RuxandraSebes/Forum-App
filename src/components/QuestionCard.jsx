@@ -5,10 +5,10 @@ import AnswerForm from "./AnswerForm";
 import AnswerCard from "./AnswerCard";
 
 export default function QuestionCard({ question, onVote, onDelete, currentUser }) {
-  console.log("Question object:", question);
+  //console.log("Question object:", question);
   //console.log("QuestionCard currentUser:", currentUser);
 
- currentUser = {id: 1, username: 'updatedUser', email: 'updated@example.com'}
+ //currentUser = {id: 1, username: 'updatedUser', email: 'updated@example.com'}
   const [answers, setAnswers] = useState(() => {
     const saved = loadFromStorage(`answers_${question.id}`);
     return saved || [];
@@ -307,7 +307,7 @@ const handleQuestionVote = async (type) => {
   // useEffect care urmărește answers și schimbă statusul la "in progress" dacă e cazul
   useEffect(() => {
     const checkAndUpdateStatus = async () => {
-      if (localQuestion.status === "received" && answers.length > 0) {
+      if (question.status === "received" && answers.length > 0) {
         await updateQuestionStatus("in progress");
       }
     };
@@ -317,7 +317,7 @@ const handleQuestionVote = async (type) => {
 
    // Funcția pentru acceptarea unui răspuns
   const handleAcceptAnswer = async (id) => {
-    if (localQuestion.status === "solved") return;
+    if (question.status === "solved") return;
 
     const updatedAnswers = answers.map((ans) =>
       ans.id === id ? { ...ans, isAccepted: true } : { ...ans, isAccepted: false }
@@ -360,7 +360,7 @@ const handleQuestionVote = async (type) => {
   const handleDeleteQuestion = () => {
     onDelete(question.id);
   };*/
-  const [editedContent, setEditedContent] = useState(localQuestion.content);
+  const [editedContent, setEditedContent] = useState(question.content);
 
   const handleEditQuestion = async () => {
   const updated = {
@@ -429,7 +429,7 @@ async function updateAnswer(answerId, newContent) {
   // presupun că ai authorId și questionId undeva în context sau props
 
  // const authorId = currentUser.id;  // sau cum îl ai
-  const authorId = 1 // presupun că ai authorId din currentUser
+  const authorId = currentUser.id; // presupun că ai authorId din currentUser
   const questionId = question.id;
 
   const response = await fetch(`http://localhost:8080/answers/update?answerId=${answerId}&authorId=${authorId}&questionId=${questionId}`, {
@@ -551,10 +551,15 @@ const handleAnswerDelete = async (id) => {
 
         <div style={styles.details}>
           <p><strong>Autor:</strong> {question.author.username}</p>
-          <p><strong>Data creării:</strong> {new Date(question.createdAt).toLocaleString()}</p>
+          <p>
+  <strong>Data creării:</strong>{" "}
+  {question.createdDate
+    ? new Date(question.createdDate).toLocaleString()
+    : "Necunoscută"}
+</p>
           <p style={{ textTransform: 'capitalize' }}><strong>Status:</strong> {question.status}</p>
-          <p><strong>Tag-uri:</strong> {localQuestion.tags?.join(", ")|| ""}</p>
-          <p style={styles.text}><strong>Întrebare:</strong> {localQuestion.content}</p>
+          <p><strong>Tag-uri:</strong> {question.tags?.join(", ")|| ""}</p>
+          <p style={styles.text}><strong>Întrebare:</strong> {question.content}</p>
 
           <VoteButtons
   isAnswer={false}
@@ -575,7 +580,7 @@ const handleAnswerDelete = async (id) => {
               onEdit={handleAnswerEdit}
               onDelete={handleAnswerDelete}
               //onVote={handleAnswerVote}
-              currentUser={{id: 1, username: 'updatedUser', email: 'updated@example.com'}}
+              currentUser={currentUser}
               question={question}
               style={styles.answerCard}
               onAccept={handleAcceptAnswer}
@@ -588,7 +593,7 @@ const handleAnswerDelete = async (id) => {
       {question.status !== "solved" && (
   <AnswerForm
   onAddAnswer={addAnswer}
-  currentUser={{id: 1, username: 'updatedUser', email: 'updated@example.com'}}
+  currentUser={currentUser}
   questionId={question.id}
   questionStatus={question.status}
 />

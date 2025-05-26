@@ -49,7 +49,7 @@ export default function VoteButtons({
     const voteValue = type === "up" ? 1 : -1;
 
     const payload = {
-      userId: 1, // hardcodat temporar
+      userId: currentUser.id, // hardcodat temporar
       voteType: voteValue,
     };
 

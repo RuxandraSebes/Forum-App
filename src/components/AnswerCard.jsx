@@ -5,7 +5,7 @@ export default function AnswerCard({ answer, onEdit, onDelete, onVote, question,
   const [isEditing, setIsEditing] = useState(false);
   const [newText, setNewText] = useState(answer.content);
 
-  console.log("AnswerCard currentUser", currentUser);
+  //console.log("AnswerCard currentUser", currentUser);
 
   const handleEdit = () => {
     onEdit(answer.id, newText);
@@ -81,7 +81,7 @@ const isQuestionAuthor = normalize(questionAuthorUsername) === normalize(current
   isAnswer={true}
   votes={answer.votes}
   author={answer.authorUsername}
-  currentUser={currentUsername}
+  currentUser={currentUser}
   targetId={answer.id}
 />
 
