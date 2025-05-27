@@ -6,6 +6,8 @@ export default function AnswerCard({ answer, onEdit, onDelete, onVote, question,
   const [newText, setNewText] = useState(answer.content);
 
   //console.log("AnswerCard currentUser", currentUser);
+  //console.log("AnswerCard answer", answer);
+  //console.log("Answer autor", answer.author)
 
   const handleEdit = () => {
     onEdit(answer.id, newText);
@@ -72,7 +74,7 @@ const isQuestionAuthor = normalize(questionAuthorUsername) === normalize(current
         <>
           <p style={styles.text}>{answer.content}</p>
           <p style={styles.meta}>
-            <strong>Autor:</strong> {answer.authorUsername}
+            <strong>Autor:</strong> <span>{answer.author.username} ({answer.author?.score ?? 0} pts)</span>
           </p>
           <p style={styles.meta}>
             <strong>Data:</strong> {new Date(answer.createdDate).toLocaleString()}

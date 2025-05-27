@@ -5,7 +5,7 @@ import AnswerForm from "./AnswerForm";
 import AnswerCard from "./AnswerCard";
 
 export default function QuestionCard({ question, onVote, onDelete, currentUser }) {
-  //console.log("Question object:", question);
+  console.log("Question object:", question);
   //console.log("QuestionCard currentUser:", currentUser);
 
  //currentUser = {id: 1, username: 'updatedUser', email: 'updated@example.com'}
@@ -46,243 +46,6 @@ export default function QuestionCard({ question, onVote, onDelete, currentUser }
       updateQuestionStatus("in progress");
     }
   };
-
-  /*const handleAnswerEdit = (id, newText) => {
-    const updatedAnswers = answers.map((ans) =>
-      ans.id === id ? { ...ans, text: newText } : ans
-    );
-
-    setAnswers(updatedAnswers);
-    saveToStorage(`answers_${question.id}`, updatedAnswers);
-  };
-
-  const handleAnswerDelete = (id) => {
-    setAnswers((prev) => {
-      const updatedAnswers = prev.filter((ans) => ans.id !== id);
-      saveToStorage(`answers_${question.id}`, updatedAnswers);
-      return updatedAnswers;
-    });
-  };*/
-
-  /*const handleQuestionVote = (type) => {
-    if (hasVoted || localQuestion.author === currentUser) return;
-  
-    const updatedVotes = {
-      ...localQuestion.votes,
-      [type]: (localQuestion.votes[type] || 0) + 1,
-    };
-  
-    const updatedQuestion = {
-      ...localQuestion,
-      votes: updatedVotes,
-    };
-  
-    setLocalQuestion(updatedQuestion);
-    setHasVoted(true);
-  
-    saveToStorage(`question_vote_${question.id}`, true);
-    saveToStorage(`question_votes_${question.id}`, updatedVotes);
-  
-   
-    onVote(type); 
-  };*/
-/*
-const handleQuestionVote = async (type) => {
-  const hardcodedUser = {
-    id: 1,
-    username: "updatedUser",
-    email: "updated@example.com",
-  };
-
-  if (hasVoted || localQuestion.author.username === hardcodedUser.username) return;
-
-  try {
-    const response = await fetch("http://localhost:8080/votes", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        user_id: hardcodedUser.id,
-        question_id: question.id,
-        vote_type: type === "up" ? 1 : -1, // "up" sau "down"
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(errorText || "Eroare la vot.");
-    }
-
-    const updatedVoteData = await response.json();
-
-    const updatedQuestion = {
-      ...localQuestion,
-      votes: updatedVoteData,
-    };
-
-    setLocalQuestion(updatedQuestion);
-    setHasVoted(true);
-
-    if (onVote) onVote(type);
-  } catch (error) {
-    console.error("Eroare la votul întrebării:", error);
-  }
-};*/
-
-
-
-
-
-  /*const handleAnswerVote = (id, type) => {
-    const targetAnswer = answers.find((ans) => ans.id === id);
-  
-    if (!targetAnswer || targetAnswer.author === currentUser) return;
-  
-    const updatedAnswers = answers.map((ans) =>
-      ans.id === id
-        ? {
-            ...ans,
-            votes: {
-              ...ans.votes,
-              [type]: (ans.votes?.[type] || 0) + 1,
-            },
-          }
-        : ans
-    );
-  
-    setAnswers(updatedAnswers);
-    saveToStorage(`answers_${question.id}`, updatedAnswers);
-  };*/
-
-  /*const handleAnswerVote = async (id, type) => {
-     const hardcodedUser = {
-    id: 1,
-    username: "updatedUser",
-    email: "updated@example.com",
-  };
-
-  const targetAnswer = answers.find((ans) => ans.id === id);
-  if (!targetAnswer || targetAnswer.author === hardcodedUser?.id) return;
-
-  try {
-    const votePayload = {
-      user_id: hardcodedUser.id,
-      answer_id: id,
-      vote_type: type === "up" ? 1 : -1,
-    };
-
-    const response = await fetch("http://localhost:8080/votes", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(votePayload),
-    });
-
-    if (!response.ok) {
-      const err = await response.text();
-      alert("Eroare la vot: " + err);
-      return;
-    }
-
-    const updatedAnswers = answers.map((ans) =>
-      ans.id === id
-        ? {
-            ...ans,
-            votes: {
-              ...ans.votes,
-              [type]: (ans.votes?.[type] || 0) + 1,
-            },
-          }
-        : ans
-    );
-
-    setAnswers(updatedAnswers);
-    saveToStorage(`answers_${question.id}`, updatedAnswers);
-  } catch (err) {
-    console.error("Eroare la vot:", err);
-    alert("A apărut o eroare la vot.");
-  }
-};*/
-
-
-  /*const handleAcceptAnswer = (id) => {
-    if (localQuestion.status === "solved") return;
-  
-    const updatedAnswers = answers.map((ans) =>
-      ans.id === id ? { ...ans, isAccepted: true } : { ...ans, isAccepted: false }
-    );
-  
-    const updatedQuestion = {
-      ...localQuestion,
-      status: "solved",
-    };
-  
-    setAnswers(updatedAnswers);
-    setLocalQuestion(updatedQuestion);
-  
-    saveToStorage(`answers_${question.id}`, updatedAnswers);
-    saveToStorage(`question_status_${question.id}`, "solved");
-  };*/
-
-  /*const updateQuestionStatus = (newStatus) => {
-    const updated = {
-      ...localQuestion,
-      status: newStatus,
-    };
-    setLocalQuestion(updated);
-    saveToStorage(`question_data_${question.id}`, updated);
-  };
-
-  useEffect(() => {
-  if (localQuestion.status === "received" && answers.length > 0) {
-    updateQuestionStatus("in progress");
-  }
-}, [answers]);
-
-  const handleAcceptAnswer = async (id) => {
-  if (localQuestion.status === "solved") return;
-
-  // Setăm răspunsul acceptat local
-  const updatedAnswers = answers.map((ans) =>
-    ans.id === id ? { ...ans, isAccepted: true } : { ...ans, isAccepted: false }
-  );
-
-  // Update localQuestion status la solved
-  const updatedQuestion = {
-    ...localQuestion,
-    status: "solved",
-  };
-
-  setAnswers(updatedAnswers);
-  setLocalQuestion(updatedQuestion);
-
-  saveToStorage(`answers_${question.id}`, updatedAnswers);
-  saveToStorage(`question_status_${question.id}`, "solved");
-
-  // Trimitem update la backend pentru statusul întrebării
-  try {
-    const response = await fetch(`http://localhost:8080/questions/${question.id}`, {
-      method: "PUT", // sau PUT în funcție de ce ai pe backend
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ status: "solved" }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Eroare la actualizarea statusului întrebării");
-    }
-
-    const updatedData = await response.json();
-    setLocalQuestion(updatedData); // sincronizare cu backend
-
-  } catch (error) {
-    console.error("Eroare la actualizarea statusului:", error);
-    // aici poți afișa un mesaj de eroare sau face rollback dacă vrei
-  }
-};*/
 
  const updateQuestionStatus = async (newStatus) => {
     try {
@@ -344,22 +107,6 @@ const handleQuestionVote = async (type) => {
     }
   };
 
-
-
-  /*const handleEditQuestion = () => {
-    const updated = {
-      ...localQuestion,
-      title: editedTitle,
-      tags: editedTags.split(",").map((tag) => tag.trim()),
-    };
-    setLocalQuestion(updated);
-    saveToStorage(`question_data_${question.id}`, updated);
-    setIsEditingQuestion(false);
-  };
-
-  const handleDeleteQuestion = () => {
-    onDelete(question.id);
-  };*/
   const [editedContent, setEditedContent] = useState(question.content);
 
   const handleEditQuestion = async () => {
@@ -408,7 +155,7 @@ const handleDeleteQuestion = async () => {
  useEffect(() => {
     const fetchAnswers = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/answers/byQuestion/${question.id}`);
+        const response = await fetch(`http://localhost:8080/answers/question/${question.id}`);
         if (response.ok) {
           const data = await response.json();
           setAnswers(data);
@@ -550,7 +297,8 @@ const handleAnswerDelete = async (id) => {
         )}
 
         <div style={styles.details}>
-          <p><strong>Autor:</strong> {question.author.username}</p>
+          <p><strong>Autor:</strong> <span>{question.author.username} ({question.author.score} pts)</span>
+</p>
           <p>
   <strong>Data creării:</strong>{" "}
   {question.createdDate
