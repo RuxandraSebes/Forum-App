@@ -7,3 +7,7 @@ export const saveToStorage = (key, data) => {
     return data ? JSON.parse(data) : null;
   };
   
+  export const clearStorage = (key) => {
+    localStorage.removeItem(key);
+  };
+  

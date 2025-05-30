@@ -5,10 +5,6 @@ import AnswerForm from "./AnswerForm";
 import AnswerCard from "./AnswerCard";
 
 export default function QuestionCard({ question, onVote, onDelete, currentUser }) {
-  console.log("Question object:", question);
-  //console.log("QuestionCard currentUser:", currentUser);
-
- //currentUser = {id: 1, username: 'updatedUser', email: 'updated@example.com'}
   const [answers, setAnswers] = useState(() => {
     const saved = loadFromStorage(`answers_${question.id}`);
     return saved || [];
@@ -29,7 +25,8 @@ export default function QuestionCard({ question, onVote, onDelete, currentUser }
 
   const [isEditingQuestion, setIsEditingQuestion] = useState(false);
   const [editedTitle, setEditedTitle] = useState(localQuestion.title);
-  const [editedTags, setEditedTags] = useState(question.tags?.join(", ")|| "");
+  const [editedTags, setEditedTags] = useState(question.tags?.join(", ") || "");
+  const [editedContent, setEditedContent] = useState(question.content);
 
   const addAnswer = (newAnswer) => {
     const updatedAnswers = [newAnswer, ...answers];
@@ -47,7 +44,7 @@ export default function QuestionCard({ question, onVote, onDelete, currentUser }
     }
   };
 
- const updateQuestionStatus = async (newStatus) => {
+  const updateQuestionStatus = async (newStatus) => {
     try {
       const response = await fetch(`http://localhost:8080/questions/${question.id}`, {
         method: "PUT",
@@ -63,22 +60,15 @@ export default function QuestionCard({ question, onVote, onDelete, currentUser }
       setLocalQuestion(updatedData);
     } catch (error) {
       console.error("Eroare la actualizarea statusului:", error);
-      // Aici poți implementa rollback sau afișa mesaj de eroare UI
     }
   };
 
-  // useEffect care urmărește answers și schimbă statusul la "in progress" dacă e cazul
   useEffect(() => {
-    const checkAndUpdateStatus = async () => {
-      if (question.status === "received" && answers.length > 0) {
-        await updateQuestionStatus("in progress");
-      }
-    };
-
-    checkAndUpdateStatus();
+    if (question.status === "received" && answers.length > 0) {
+      updateQuestionStatus("in progress");
+    }
   }, [answers]);
 
-   // Funcția pentru acceptarea unui răspuns
   const handleAcceptAnswer = async (id) => {
     if (question.status === "solved") return;
 
@@ -87,7 +77,6 @@ export default function QuestionCard({ question, onVote, onDelete, currentUser }
     );
 
     try {
-      // Actualizează statusul întrebării la solved
       const response = await fetch(`http://localhost:8080/questions/${question.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -101,58 +90,56 @@ export default function QuestionCard({ question, onVote, onDelete, currentUser }
       const updatedQuestion = await response.json();
       setLocalQuestion(updatedQuestion);
       setAnswers(updatedAnswers);
-
     } catch (error) {
       console.error("Eroare la acceptarea răspunsului:", error);
     }
   };
 
-  const [editedContent, setEditedContent] = useState(question.content);
-
   const handleEditQuestion = async () => {
-  const updated = {
-    title: editedTitle,
-    content: editedContent,
+    const updated = {
+      title: editedTitle,
+      content: editedContent,
+    };
+
+    try {
+      const response = await fetch(`http://localhost:8080/questions/${question.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updated),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setLocalQuestion(data);
+        saveToStorage(`question_data_${question.id}`, data);
+        setIsEditingQuestion(false);
+      } else {
+        console.error("Eroare la actualizarea întrebării.");
+      }
+    } catch (error) {
+      console.error("Eroare de rețea:", error);
+    }
   };
 
-  try {
-    const response = await fetch(`http://localhost:8080/questions/${question.id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(updated),
-    });
+  const handleDeleteQuestion = async () => {
+    try {
+      const response = await fetch(`http://localhost:8080/questions/${question.id}`, {
+        method: "DELETE",
+      });
 
-    if (response.ok) {
-      const data = await response.json();
-      setLocalQuestion(data); // actualizează local întrebare
-      saveToStorage(`question_data_${question.id}`, data);
-      setIsEditingQuestion(false);
-    } else {
-      console.error("Eroare la actualizarea întrebării.");
+      if (response.ok || response.status === 204) {
+        onDelete(question.id);
+      } else {
+        console.error("Eroare la ștergerea întrebării.");
+      }
+    } catch (error) {
+      console.error("Eroare de rețea:", error);
     }
-  } catch (error) {
-    console.error("Eroare de rețea:", error);
-  }
-};
-const handleDeleteQuestion = async () => {
-  try {
-    const response = await fetch(`http://localhost:8080/questions/${question.id}`, {
-      method: "DELETE",
-    });
+  };
 
-    if (response.ok || response.status === 204) {
-      onDelete(question.id); // notifică părinte că întrebarea a fost ștearsă
-    } else {
-      console.error("Eroare la ștergerea întrebării.");
-    }
-  } catch (error) {
-    console.error("Eroare de rețea:", error);
-  }
-};
-
- useEffect(() => {
+  useEffect(() => {
     const fetchAnswers = async () => {
       try {
         const response = await fetch(`http://localhost:8080/answers/question/${question.id}`);
@@ -171,69 +158,64 @@ const handleDeleteQuestion = async () => {
     fetchAnswers();
   }, [question.id]);
 
-// updateAnswer - trimite PUT la backend
-async function updateAnswer(answerId, newContent) {
-  // presupun că ai authorId și questionId undeva în context sau props
+  async function updateAnswer(answerId, newContent) {
+    const authorId = currentUser.id;
+    const questionId = question.id;
 
- // const authorId = currentUser.id;  // sau cum îl ai
-  const authorId = currentUser.id; // presupun că ai authorId din currentUser
-  const questionId = question.id;
-
-  const response = await fetch(`http://localhost:8080/answers/update?answerId=${answerId}&authorId=${authorId}&questionId=${questionId}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ content: newContent })
-  });
-
-  if (!response.ok) throw new Error("Eroare la actualizare răspuns");
-  return response.json();
-}
-
-// deleteAnswer - trimite DELETE la backend
-async function deleteAnswer(answerId) {
-  const response = await fetch(`http://localhost:8080/answers/deleteById?id=${answerId}`, {
-    method: "DELETE"
-  });
-
-  if (!response.ok) throw new Error("Eroare la ștergerea răspunsului");
-  return response.text();
-}
-
-const handleAnswerEdit = async (id, newText) => {
-  try {
-    const updatedAnswer = await updateAnswer(id, newText);
-    const updatedAnswers = answers.map((ans) =>
-      ans.id === id ? updatedAnswer : ans
+    const response = await fetch(
+      `http://localhost:8080/answers/update?answerId=${answerId}&authorId=${authorId}&questionId=${questionId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ content: newContent }),
+      }
     );
 
-    setAnswers(updatedAnswers);
-    saveToStorage(`answers_${question.id}`, updatedAnswers);
-  } catch (error) {
-    console.error("Eroare la actualizarea răspunsului:", error);
+    if (!response.ok) throw new Error("Eroare la actualizare răspuns");
+    return response.json();
   }
-};
 
-const handleAnswerDelete = async (id) => {
-  try {
-    await deleteAnswer(id);
-    const updatedAnswers = answers.filter((ans) => ans.id !== id);
-    setAnswers(updatedAnswers);
-    saveToStorage(`answers_${question.id}`, updatedAnswers);
-  } catch (error) {
-    console.error("Eroare la ștergerea răspunsului:", error);
+  async function deleteAnswer(answerId) {
+    const response = await fetch(`http://localhost:8080/answers/deleteById?id=${answerId}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) throw new Error("Eroare la ștergerea răspunsului");
+    return response.text();
   }
-};
-  
-                //console.log("question.author:", question.author);
-                //console.log("currentUser:", currentUser);
-                //console.log("are we displaying edit/delete buttons?", question.author.username === currentUser.username);
-             
+
+  const handleAnswerEdit = async (id, newText) => {
+    try {
+      const updatedAnswer = await updateAnswer(id, newText);
+      const updatedAnswers = answers.map((ans) => (ans.id === id ? updatedAnswer : ans));
+
+      setAnswers(updatedAnswers);
+      saveToStorage(`answers_${question.id}`, updatedAnswers);
+    } catch (error) {
+      console.error("Eroare la actualizarea răspunsului:", error);
+    }
+  };
+
+  const handleAnswerDelete = async (id) => {
+    try {
+      await deleteAnswer(id);
+      const updatedAnswers = answers.filter((ans) => ans.id !== id);
+      setAnswers(updatedAnswers);
+      saveToStorage(`answers_${question.id}`, updatedAnswers);
+    } catch (error) {
+      console.error("Eroare la ștergerea răspunsului:", error);
+    }
+  };
+
+  const canEditOrDelete =
+    question.author?.username === currentUser?.username || currentUser?.role === "moderator";
+
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-      <div style={styles.imageContainer}>
+        <div style={styles.imageContainer}>
           <img
             src={"/images/user-profile-icon-free-vector.jpg"}
             alt="Profile"
@@ -250,13 +232,13 @@ const handleAnswerDelete = async (id) => {
           />
         )}
 
-        {question.author === currentUser.username && question.status !== "solved" && (
+        {canEditOrDelete && question.status !== "solved" && (
           <button onClick={() => updateQuestionStatus("solved")} style={styles.button}>
             Marchează ca rezolvat
           </button>
         )}
 
-        {question.author?.username === currentUser.username && (
+        {canEditOrDelete && (
           <div style={{ marginTop: "10px" }}>
             {isEditingQuestion ? (
               <>
@@ -281,43 +263,43 @@ const handleAnswerDelete = async (id) => {
               </>
             ) : (
               <>
-                {question.author.username === currentUser.username && (
-                  <>
-                    <button onClick={() => setIsEditingQuestion(true)} style={styles.button}>
-                      Editează întrebarea
-                    </button>
-                    <button onClick={handleDeleteQuestion} style={styles.button}>
-                      Șterge întrebarea
-                    </button>
-                  </>
-                ) }
+                <button onClick={() => setIsEditingQuestion(true)} style={styles.button}>
+                  Editează întrebarea
+                </button>
+                <button onClick={handleDeleteQuestion} style={styles.button}>
+                  Șterge întrebarea
+                </button>
               </>
             )}
           </div>
         )}
 
         <div style={styles.details}>
-          <p><strong>Autor:</strong> <span>{question.author.username} ({question.author.score} pts)</span>
-</p>
           <p>
-  <strong>Data creării:</strong>{" "}
-  {question.createdDate
-    ? new Date(question.createdDate).toLocaleString()
-    : "Necunoscută"}
-</p>
-          <p style={{ textTransform: 'capitalize' }}><strong>Status:</strong> {question.status}</p>
-          <p><strong>Tag-uri:</strong> {question.tags?.join(", ")|| ""}</p>
-          <p style={styles.text}><strong>Întrebare:</strong> {question.content}</p>
+            <strong>Autor:</strong> <span>{question.author?.username} ({question.author?.score} pts)</span>
+          </p>
+          <p>
+            <strong>Data creării:</strong>{" "}
+            {question.createdDate ? new Date(question.createdDate).toLocaleString() : "Necunoscută"}
+          </p>
+          <p style={{ textTransform: "capitalize" }}>
+            <strong>Status:</strong> {question.status}
+          </p>
+          <p>
+            <strong>Tag-uri:</strong> {question.tags?.join(", ") || ""}
+          </p>
+          <p style={styles.text}>
+            <strong>Întrebare:</strong> {question.content}
+          </p>
 
           <VoteButtons
-  isAnswer={false}
-  votes={question.votes}
-  author={question.author}
-  currentUser={currentUser}
-  targetId={question.id}
-/>
-
-           </div>
+            isAnswer={false}
+            votes={question.votes}
+            author={question.author}
+            currentUser={currentUser}
+            targetId={question.id}
+          />
+        </div>
 
         <h4>Răspunsuri:</h4>
         {answers.length > 0 ? (
@@ -327,7 +309,6 @@ const handleAnswerDelete = async (id) => {
               answer={answer}
               onEdit={handleAnswerEdit}
               onDelete={handleAnswerDelete}
-              //onVote={handleAnswerVote}
               currentUser={currentUser}
               question={question}
               style={styles.answerCard}
@@ -338,17 +319,15 @@ const handleAnswerDelete = async (id) => {
           <p>Nu sunt răspunsuri încă.</p>
         )}
 
-      {question.status !== "solved" && (
-  <AnswerForm
-  onAddAnswer={addAnswer}
-  currentUser={currentUser}
-  questionId={question.id}
-  questionStatus={question.status}
-/>
-)}
-      
-
-        </div>
+        {question.status !== "solved" && (
+          <AnswerForm
+            onAddAnswer={addAnswer}
+            currentUser={currentUser}
+            questionId={question.id}
+            questionStatus={question.status}
+          />
+        )}
+      </div>
     </div>
   );
 }
@@ -359,7 +338,6 @@ const styles = {
     fontSize: "16px",
     lineHeight: "1.5",
   },
-  
   image: {
     width: "50px",
     height: "50px",

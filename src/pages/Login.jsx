@@ -41,7 +41,14 @@ export default function Login() {
       saveToStorage("currentUser", user);
       setMessage("Autentificare reușită!");
       setMessageType("success");
-      setTimeout(() => navigate("/"), 1000);
+      setTimeout(() => {
+        console.log('Logged in user:', user); // Add debug log
+        if (user.role?.toLowerCase() === 'moderator') {
+          navigate("/moderator");
+        } else {
+          navigate("/");
+        }
+      }, 1000);
     } catch (error) {
       console.error("Eroare la login:", error);
       setMessage("Eroare la conectare!");

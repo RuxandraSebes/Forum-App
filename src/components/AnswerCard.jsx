@@ -5,28 +5,20 @@ export default function AnswerCard({ answer, onEdit, onDelete, onVote, question,
   const [isEditing, setIsEditing] = useState(false);
   const [newText, setNewText] = useState(answer.content);
 
-  //console.log("AnswerCard currentUser", currentUser);
-  //console.log("AnswerCard answer", answer);
-  //console.log("Answer autor", answer.author)
-
   const handleEdit = () => {
     onEdit(answer.id, newText);
     setIsEditing(false);
   };
 
-const currentUsername = typeof currentUser === "string" ? currentUser : currentUser?.username;
+  const currentUsername = typeof currentUser === "string" ? currentUser : currentUser?.username;
+  const isModerator = typeof currentUser === "object" && currentUser?.role?.toLowerCase() === "moderator";
 
-const normalize = str => (str || "").trim().toLowerCase();
+  const normalize = str => (str || "").trim().toLowerCase();
 
-const questionAuthorUsername = question?.author?.username;
+  const questionAuthorUsername = question?.author?.username;
 
-const isAuthor = answer.authorUsername === currentUsername;
-const isQuestionAuthor = normalize(questionAuthorUsername) === normalize(currentUsername);
-
-//console.log("question full object:", question);
-//console.log("questionAuthorUsername:", questionAuthorUsername);
-//console.log("isQuestionAuthor:", isQuestionAuthor);
-
+  const isAuthor = answer.authorUsername === currentUsername;
+  const isQuestionAuthor = normalize(questionAuthorUsername) === normalize(currentUsername);
 
   const isSolved = question?.status?.toLowerCase() === "solved";
 
@@ -42,20 +34,11 @@ const isQuestionAuthor = normalize(questionAuthorUsername) === normalize(current
         </div>
       </div>
 
-
       {!isSolved && isQuestionAuthor && !answer.isAccepted && (
-      <button onClick={() => onAccept(answer.id)} style={styles.acceptButton}>
-        Acceptă răspunsul
-      </button>
-    )}
-
-    {/*localQuestion.author === currentUser.username && localQuestion.status !== "solved" && (
-  <button onClick={() => updateQuestionStatus("solved")} style={styles.button}>
-    Marchează ca rezolvat
-  </button>
-)*/}
-
-
+        <button onClick={() => onAccept(answer.id)} style={styles.acceptButton}>
+          Acceptă răspunsul
+        </button>
+      )}
 
       {isEditing ? (
         <>
@@ -79,17 +62,17 @@ const isQuestionAuthor = normalize(questionAuthorUsername) === normalize(current
           <p style={styles.meta}>
             <strong>Data:</strong> {new Date(answer.createdDate).toLocaleString()}
           </p>
-         <VoteButtons
-  isAnswer={true}
-  votes={answer.votes}
-  author={answer.authorUsername}
-  currentUser={currentUser}
-  targetId={answer.id}
-/>
 
+          <VoteButtons
+            isAnswer={true}
+            votes={answer.votes}
+            author={answer.authorUsername}
+            currentUser={currentUser}
+            targetId={answer.id}
+          />
 
           <div style={styles.buttonContainer}>
-            {isAuthor && (
+            {(isAuthor || isModerator) && (
               <div style={styles.buttonContainer}>
                 <button onClick={() => setIsEditing(true)} style={styles.editButton}>Editează</button>
                 <button onClick={() => onDelete(answer.id)} style={styles.deleteButton}>Șterge</button>

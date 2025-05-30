@@ -16,36 +16,36 @@ export default function Home() {
   const [showOwnQuestions, setShowOwnQuestions] = useState(false);
   const [currentUser, setCurrentUser] = useState(() => loadFromStorage("currentUser") || null);
 
-
   const navigate = useNavigate();
 
   useEffect(() => {
-  const userFromStorage = loadFromStorage("currentUser");
-  setCurrentUser(userFromStorage);
-}, []);
+    const userFromStorage = loadFromStorage("currentUser");
+    setCurrentUser(userFromStorage);
+  }, []);
 
+  
 
   useEffect(() => {
-  const fetchQuestions = async () => {
-    try {
-      const response = await getQuestionDetails();
-const data = response.data;
-      //console.log("date din API:", data);  // 🟡 vezi ce primești
+    const fetchQuestions = async () => {
+      try {
+        const response = await getQuestionDetails();
+        const data = response.data;
+        //console.log("date din API:", data);  // 🟡 vezi ce primești
 
-      if (Array.isArray(data)) {
-        setQuestions(data);
-        saveToStorage("questions", data);
-      } else {
-        console.error("Datele întoarse de getQuestionDetails NU sunt un array:", data);
-        setQuestions([]);
+        if (Array.isArray(data)) {
+          setQuestions(data);
+          saveToStorage("questions", data);
+        } else {
+          console.error("Datele întoarse de getQuestionDetails NU sunt un array:", data);
+          setQuestions([]);
+        }
+      } catch (error) {
+        console.error("Eroare la încărcarea întrebărilor:", error);
       }
-    } catch (error) {
-      console.error("Eroare la încărcarea întrebărilor:", error);
-    }
-  };
+    };
 
-  fetchQuestions();
-}, []);
+    fetchQuestions();
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("currentUser");
